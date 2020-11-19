@@ -9,7 +9,7 @@
 -- PRIMARY KEY(GameID)
 -- FOREIGN key(UserName) REFERENCES Player
 
--- Turn(TurnNumber,TurnResult)
+-- Turn(GameID,TurnNumber,TurnResult,ChoiceName)
 -- Primary Key (TurnNumber,GameID)
 -- Foreign Key (GameID)REFERENCES Game
 -- Foreign Key (ChoiceName)REFERENCES Choice
@@ -55,21 +55,21 @@ CREATE TABLE Game
   Foreign KEY(UserName) REFERENCES Player,
 )
 
--- CREATE TABLE Turn
--- (
---   TurnNumber INT,
---   GameID INT,
---   TurnResult  NVARCHAR(1),
---   ChoiceName NVARCHAR(10),
---   CHECK (TurnNumber In (1,2,3,4,5)),
---   CHECK (LEN(GameID)=6),
---   CHECK (TurnResult In ('W','L','D')),
---   CHECK (ChoiceName In ('PAPER','SCISSOR','ROCK')),
---   Primary Key(GameID,TurnNumber),
---   Foreign KEY(GameID)REFERENCES Game,
---   -- Foreign KEY(UserName) REFERENCES Game,
---   Foreign KEY(ChoiceName) REFERENCES Choice,
--- )
+CREATE TABLE Turn
+(
+  TurnNumber INT,
+  GameID INT,
+  TurnResult  NVARCHAR(1),
+  ChoiceName NVARCHAR(10),
+  CHECK (TurnNumber<5),
+  CHECK (LEN(GameID)=6),
+  CHECK (TurnResult In ('W','L','D')),
+  CHECK (ChoiceName In ('PAPER','SCISSOR','ROCK')),
+  Primary Key(GameID,TurnNumber),
+  Foreign KEY(GameID)REFERENCES Game,
+  -- Foreign KEY(UserName) REFERENCES Game,
+  Foreign KEY(ChoiceName) REFERENCES Choice,
+)
 
 
 
@@ -101,27 +101,28 @@ SELECT *FROM Turn
 select * FROM Game
 Select * from Choice
 -- ---------------------ADD PLAYER--------------------------------P
-GO
-IF OBJECT_ID('ADD_PLAYER') IS NOT NULL
-DROP PROCEDURE ADD_PLAYER;
-GO
-CREATE PROCEDURE ADD_PLAYER @name NVARCHAR(100) AS
-BEGIN
+-- GO
+-- IF OBJECT_ID('ADD_PLAYER') IS NOT NULL
+-- DROP PROCEDURE ADD_PLAYER;
+-- GO
+-- CREATE PROCEDURE ADD_PLAYER @name NVARCHAR(100) AS
+-- BEGIN
 
     -- SELECT @name=UserName
     -- FROM Player
     -- IF @@ROWCOUNT!=0
     -- THROW 50030,'Duplicate player name',1
-    INSERT INTO Player(UserName)VALUES(@name)
+--     INSERT INTO Player(UserName)VALUES(@name)
   
-END;
-GO
-SELECT * 
-  FROM test.INFORMATION_SCHEMA.ROUTINES
- WHERE ROUTINE_TYPE = 'PROCEDURE'
- GO
+-- END;
+-- GO
+-- SELECT * 
+--   FROM test.INFORMATION_SCHEMA.ROUTINES
+--  WHERE ROUTINE_TYPE = 'PROCEDURE'
+--  GO
 -- SELECT * FROM Player
 -- -------------------Generate game ID-----------------
+GO
 IF OBJECT_ID('Game_SEQ') IS NOT NULL
 DROP SEQUENCE Game_SEQ;
 CREATE SEQUENCE Game_SEQ
@@ -137,22 +138,47 @@ CREATE PROCEDURE ADD_GAME
 @UserName NVARCHAR(100),@GameStarted Nvarchar(max),@GameResult NVARCHAR(1),@NumOfTurns INT
 AS
 BEGIN
-  -- BEGIN TRY
-  DECLARE @GameID INT
-  -- IF ISDATE(@GameStarted)!=1
-  --           THROW 50250,'Date not valid',1
-  SET @GameID =NEXT VALUE FOR Game_SEQ
-  INSERT INTO Game(GameID, UserName,GameStarted,GameResult,NumOfTurn)VALUES
-  (@GameID,@UserName,@GameStarted,@GameResult,@NumOfTurns)
-
-  -- END TRY
-  -- BEGIN CATCH
-  -- IF ERROR_NUMBER()=50250
-  -- THROW
-  -- END CATCH
+  BEGIN TRY
+   
+    SELECT *
+    FROM Player
+    WHERE UserName=@UserName
+    IF @@ROWCOUNT=0
+    -- THROW 50030,'Duplicate player name',1
+    INSERT INTO Player(UserName)VALUES(@UserName)
+    DECLARE @GameID INT
+    SET @GameID =NEXT VALUE FOR Game_SEQ
+    INSERT INTO Game(GameID, UserName,GameStarted,GameResult,NumOfTurn)VALUES
+    (@GameID,@UserName,@GameStarted,@GameResult,@NumOfTurns)
+    
+  END TRY
+  BEGIN CATCH
+    IF ERROR_NUMBER()=50030
+    THROW
+  END CATCH
 END;
 GO
+EXEC ADD_GAME @UserNamE="mm8",@GameStarted="11/19/2020 10:40",@GameResult="W",@NumOfTurns=3
+-- IF OBJECT_ID('ADD_TURN') IS NOT NULL
+-- DROP PROCEDURE ADD_TURN;
+-- GO
+-- CREATE PROCEDURE ADD_TURN @TurnNumber INT,@TurnResult NVARCHAR(1),@ChoiceName NVARCHAR(10)
+-- AS 
+-- BEGIN
+-- DECLARE @GameID INT
+-- SELECT @GameID=GameID
+-- FROM Game
 
+--   INSERT INTO Turn(GameID,TurnNumber,TurnResult,ChoiceName)VALUES
+--   (@GameID,@TurnNumber,@TurnResult,@ChoiceName)
+-- END
+-- EXEC ADD_TURN @TurnNumber=1,@TurnResult='W',@ChoiceName='ROCK'
+
+  -- SELECT Game.UserName,COUNT(*) AS Gameplayed
+  -- FROM Game
+  -- INNER JOIN
+  -- Player
+  -- ON Game.UserName=Player.UserName
   
 
 
