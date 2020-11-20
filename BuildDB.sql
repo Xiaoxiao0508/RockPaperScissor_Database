@@ -139,7 +139,6 @@ FROM
   Group by UserName) L
   ON W.UserName=L.UserName
   ORDER BY winratio DESC
-  
 
 
 
