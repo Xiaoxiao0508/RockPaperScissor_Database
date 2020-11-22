@@ -27,7 +27,7 @@ USE test;
 --   DROP TABLE Choice;
 
 
-  
+
 -- GO
 
 -- CREATE TABLE Player
@@ -104,44 +104,44 @@ CREATE PROCEDURE ADD_GAME
   @GameResult NVARCHAR(1),
   @NumOfTurns INT
 AS
-BEGIN   
+BEGIN
   SELECT *
   FROM Player
   WHERE UserName=@UserName
-    IF @@ROWCOUNT=0
-    INSERT INTO Player(UserName)VALUES(@UserName)
-    DECLARE @GameID INT
-    SET @GameID =NEXT VALUE FOR Game_SEQ
-    INSERT INTO Game
-    (GameID, UserName,GameStarted,GameResult,NumOfTurn)VALUES
-    (@GameID, @UserName, @GameStarted, @GameResult, @NumOfTurns)  
- 
+  IF @@ROWCOUNT=0
+    INSERT INTO Player
+    (UserName)
+  VALUES(@UserName)
+  DECLARE @GameID INT
+  SET @GameID =NEXT VALUE FOR Game_SEQ
+  INSERT INTO Game
+    (GameID, UserName,GameStarted,GameResult,NumOfTurn)
+  VALUES
+    (@GameID, @UserName, @GameStarted, @GameResult, @NumOfTurns)
+
 END;
 GO
 
 
 -- -----------------------------------leaderboard---------------------------------
-SELECT G.UserName, (W.gameswin/G.gamesplayed) as winratio, G.gamesplayed, L.lastfive
+
+
+
+SELECT G.UserName, (G.gamesplayed/W.gameswin) AS winratio, G.gamesplayed, L.lastfive
 FROM
   (SELECT COUNT(UserName) as gamesplayed, UserName
   FROM Game
   GROUP BY UserName)  G
- LEFT JOIN
+  INNER JOIN
+  (SELECT UserName, LEFT(STRING_AGG(GameResult,'' ) WITHIN GROUP(ORDER BY GameStarted DESC),5) AS lastfive
+  FROM Game
+  Group by UserName) L
+  ON G.UserName=L.UserName
+
+  LEFT JOIN
   (SELECT UserName, COUNT(*) AS gameswin
   FROM Game
   WHERE GameResult='W'
   GROUP BY UserName)  W
-  ON
-  G.UserName=W.UserName
-  RIGHT JOIN
-  (SELECT UserName, LEFT(STRING_AGG(GameResult,'' ) WITHIN GROUP(ORDER BY GameStarted DESC),5) AS lastfive
-  FROM Game
-  Group by UserName) L
-  ON W.UserName=L.UserName
-  ORDER BY winratio DESC
-
-
-
-  
-  
- 
+  ON L.UserName=W.UserName
+ORDER BY winratio DESC
