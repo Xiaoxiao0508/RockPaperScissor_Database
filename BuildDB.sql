@@ -17,58 +17,58 @@
 -- GO
 USE test;
 
-IF OBJECT_ID('Turn') IS NOT NULL 
-  DROP TABLE Turn;
-IF OBJECT_ID('Game') IS NOT NULL 
-  DROP TABLE Game;
-IF OBJECT_ID('Player') IS NOT NULL 
-  DROP TABLE Player;
-IF OBJECT_ID('Choice') IS NOT NULL 
-  DROP TABLE Choice;
+-- IF OBJECT_ID('Turn') IS NOT NULL 
+--   DROP TABLE Turn;
+-- IF OBJECT_ID('Game') IS NOT NULL 
+--   DROP TABLE Game;
+-- IF OBJECT_ID('Player') IS NOT NULL 
+--   DROP TABLE Player;
+-- IF OBJECT_ID('Choice') IS NOT NULL 
+--   DROP TABLE Choice;
 
 
   
-GO
+-- GO
 
-CREATE TABLE Player
-(
-  UserName NVARCHAR(100),
-  Primary KEY (UserName)
-)
-CREATE TABLE Choice
-(
-  ChoiceName NVARCHAR(10),
-  CHECK (ChoiceName In ('PAPER','SCISSOR','ROCK')),
-  Primary Key (ChoiceName)
-)
-CREATE TABLE Game
-(
-  GameID INT,
-  UserName NVARCHAR(100),
-  GameStarted Nvarchar(max),
-  GameResult NVARCHAR(1),
-  NumOfTurn INT,
-  CHECK (LEN(GameID)=6),
-  CHECK (GameResult In ('W','L','D')),
-  CHECK (NumOfTurn In (1,3,5)),
-  Primary Key(GameID),
-  Foreign KEY(UserName) REFERENCES Player,
-)
+-- CREATE TABLE Player
+-- (
+--   UserName NVARCHAR(100),
+--   Primary KEY (UserName)
+-- )
+-- CREATE TABLE Choice
+-- (
+--   ChoiceName NVARCHAR(10),
+--   CHECK (ChoiceName In ('PAPER','SCISSOR','ROCK')),
+--   Primary Key (ChoiceName)
+-- )
+-- CREATE TABLE Game
+-- (
+--   GameID INT,
+--   UserName NVARCHAR(100),
+--   GameStarted Nvarchar(max),
+--   GameResult NVARCHAR(1),
+--   NumOfTurn INT,
+--   CHECK (LEN(GameID)=6),
+--   CHECK (GameResult In ('W','L','D')),
+--   CHECK (NumOfTurn In (1,3,5)),
+--   Primary Key(GameID),
+--   Foreign KEY(UserName) REFERENCES Player,
+-- )
 
-CREATE TABLE Turn
-(
-  TurnNumber INT,
-  GameID INT,
-  TurnResult NVARCHAR(1),
-  ChoiceName NVARCHAR(10),
-  CHECK (TurnNumber<5),
-  CHECK (LEN(GameID)=6),
-  CHECK (TurnResult In ('W','L','D')),
-  CHECK (ChoiceName In ('PAPER','SCISSOR','ROCK')),
-  Primary Key(GameID,TurnNumber),
-  Foreign KEY(GameID)REFERENCES Game,
-  Foreign KEY(ChoiceName) REFERENCES Choice,
-)
+-- CREATE TABLE Turn
+-- (
+--   TurnNumber INT,
+--   GameID INT,
+--   TurnResult NVARCHAR(1),
+--   ChoiceName NVARCHAR(10),
+--   CHECK (TurnNumber<5),
+--   CHECK (LEN(GameID)=6),
+--   CHECK (TurnResult In ('W','L','D')),
+--   CHECK (ChoiceName In ('PAPER','SCISSOR','ROCK')),
+--   Primary Key(GameID,TurnNumber),
+--   Foreign KEY(GameID)REFERENCES Game,
+--   Foreign KEY(ChoiceName) REFERENCES Choice,
+-- )
 
 -- SELECT table_catalog[database], table_schema [schema], table_name name, table_type type
 -- FROM INFORMATION_SCHEMA.TABLES
@@ -126,14 +126,14 @@ FROM
   (SELECT COUNT(UserName) as gamesplayed, UserName
   FROM Game
   GROUP BY UserName)  G
-  INNER JOIN
+ LEFT JOIN
   (SELECT UserName, COUNT(*) AS gameswin
   FROM Game
   WHERE GameResult='W'
   GROUP BY UserName)  W
   ON
   G.UserName=W.UserName
-  INNER JOIN
+  LEFT JOIN
   (SELECT UserName, LEFT(STRING_AGG(GameResult,'' ) WITHIN GROUP(ORDER BY GameStarted DESC),5) AS lastfive
   FROM Game
   Group by UserName) L
