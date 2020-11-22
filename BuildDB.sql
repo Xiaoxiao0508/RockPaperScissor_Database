@@ -133,7 +133,7 @@ FROM
   GROUP BY UserName)  W
   ON
   G.UserName=W.UserName
-  LEFT JOIN
+  RIGHT JOIN
   (SELECT UserName, LEFT(STRING_AGG(GameResult,'' ) WITHIN GROUP(ORDER BY GameStarted DESC),5) AS lastfive
   FROM Game
   Group by UserName) L
