@@ -127,7 +127,7 @@ GO
 
 
 
-SELECT G.UserName, (G.gamesplayed/W.gameswin) AS winratio, G.gamesplayed, L.lastfive
+SELECT G.UserName, (100*W.gameswin/G.gamesplayed) AS winratio, G.gamesplayed, L.lastfive
 FROM
   (SELECT COUNT(UserName) as gamesplayed, UserName
   FROM Game
